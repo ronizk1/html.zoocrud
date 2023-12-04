@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <Link rel="stylesheet" href="x.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL"
+        crossorigin="anonymous"></script>
+</head>
+
+<body style="background-color: palevioletred;">
+    <h1 style="font-family: Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif;">ZOO</h1>
+    Animal:<input id="AnimalName">
+    <br>
+    <br>
+    Age:<input id="Age">
+    <br>
+    <br>
+    <button onclick="showAll()" class="btn btn-outline-light">show all</button>
+    <button onclick="add()" class="btn btn-outline-light">add</button>
+    <button onclick="show()" class="btn btn-outline-light">show</button>
+    <br>
+    <br>
+
+
+    <div id="display" style="background-color: rgb(237, 127, 158); padding: 10px; display: flex; flex-wrap: wrap;"></div>
+
+
+    <script>
+        const MY_SERVER = "http://localhost:3000/Zoo"
+        let animals = []
+
+        function showAll() {
+            fetch(MY_SERVER)
+                .then((response) => response.json())
+                .then((json) => animals = json);
+
+            show()
+
+        }
+
+        function add() {
+            fetch(MY_SERVER, {
+                method: 'POST',
+                body: JSON.stringify({
+                    AnimalName: AnimalName.value,
+                    Age: Age.value,
+                }),
+                headers: {
+                    'Content-type': 'application/json; charset=UTF-8',
+                },
+            })
+                .then((response) => response.json())
+                .then((json) => console.log(json));
+
+            show()
+        }
+        // display array in html
+        async function show() {
+            // get data from server
+            animals = await fetch(MY_SERVER)
+            animals = await animals.json();
+
+            console.log(animals);
+            // display data in html
+            display.innerHTML = animals.map(animal => `
+            <div class="card" style="width: 18rem;">
+  <img src="https://picsum.photos/50" class="card-img-top" alt="...">
+  <div class="card-body">
+    <h5 class="card-title">Animal:${animal.AnimalName}</h5>
+    <p class="card-text">Age:${animal.Age}</p>
+    <button onclick="killAnAnimal(${animal.id}) " class="btn btn-outline-dark">del</button>
+    <button onclick="updAnimal(${animal.id})" class="btn btn-outline-dark">upd</button>
+  </div>
+</div>`).join("")
+        }
+
+
+
+
+
+
+
+        function updAnimal(id) {
+            fetch(MY_SERVER + "/" + id, {
+                method: 'PUT',
+                body: JSON.stringify({
+                    AnimalName: AnimalName.value,
+                    Age: Age.value
+                }),
+                headers: {
+                    'Content-type': 'application/json; charset=UTF-8',
+                },
+            })
+                .then((response) => response.json())
+                .then((json) => console.log(json));
+
+            show()
+
+        }
+
+        function killAnAnimal(id) {
+            fetch(MY_SERVER + "/" + id, {
+                method: 'DELETE',
+            });
+
+            show()
+        }
+
+        function loadData() {
+            if (JSON.parse(localStorage.getItem(`animals`)) != null) {
+                animals = JSON.parse(localStorage.getItem(`animals`))
+            }
+            show()
+        }
+
+        loadData()
+
+    </script>
+
+</body>
+
+</html>
